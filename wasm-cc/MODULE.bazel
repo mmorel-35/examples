@@ -35,6 +35,14 @@ git_override(
     strip_prefix = "mobile/envoy_build_config",
 )
 
+bazel_dep(name = "envoy_mobile", version = "0.0.0-dev")
+git_override(
+    module_name = "envoy_mobile",
+    commit = "b9f68615191822749f1cc9b0e7f3cb12540e29e9",
+    remote = "https://github.com/mmorel-35/envoy.git",
+    strip_prefix = "mobile",
+)
+
 bazel_dep(name = "envoy_toolshed", version = "0.3.3")
 git_override(
     module_name = "envoy_toolshed",

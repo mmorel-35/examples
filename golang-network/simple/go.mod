@@ -7,7 +7,7 @@ toolchain go1.24.1
 
 // NOTICE: these lines could be generated automatically by "go mod tidy"
 require (
-	github.com/cncf/xds/go v0.0.0-20250501225837-2ac532fd4443
+	github.com/cncf/xds/go v0.0.0-20240423153145-555b57ec207b
 	github.com/envoyproxy/envoy v1.34.3
 	google.golang.org/protobuf v1.36.6
 )

@@ -27,6 +27,14 @@ git_override(
     strip_prefix = "mobile/envoy_build_config",
 )
 
+bazel_dep(name = "envoy_mobile", version = "0.0.0-dev")
+git_override(
+    module_name = "envoy_mobile",
+    commit = "b9f68615191822749f1cc9b0e7f3cb12540e29e9",
+    remote = "https://github.com/mmorel-35/envoy.git",
+    strip_prefix = "mobile",
+)
+
 bazel_dep(name = "envoy-example-wasmcc", version = "0.0.0-dev")
 local_path_override(
     module_name = "envoy-example-wasmcc",
@@ -49,11 +57,12 @@ git_override(
     remote = "https://quiche.googlesource.com/googleurl",
 )
 
-bazel_dep(name = "rules_cc", version = "0.2.2")
+bazel_dep(name = "rules_cc", version = "0.2.8")
 bazel_dep(name = "rules_go", version = "0.57.0", repo_name = "io_bazel_rules_go")
 bazel_dep(name = "rules_pkg", version = "1.1.0")
 bazel_dep(name = "rules_python", version = "1.4.1")
 bazel_dep(name = "rules_rust", version = "0.63.0")
+bazel_dep(name = "xds", version = "0.0.0-20240423-555b57e")
 # -- bazel_dep definitions -- #
 
 go_sdk = use_extension("@io_bazel_rules_go//go:extensions.bzl", "go_sdk", dev_dependency = True)
@@ -67,15 +76,8 @@ go_deps = use_extension("@bazel_gazelle//:extensions.bzl", "go_deps", dev_depend
 go_deps.from_file(
     go_mod = "//golang-network/simple:go.mod",
 )
-# CNCF XDS Go library - required for Envoy's XDS functionality
-go_deps.module(
-    path = "github.com/cncf/xds/go",
-    sum = "h1:aQ3y1lwWyqYPiWZThqv1aFbZMiM9vblcSArJRf2Irls=",
-    version = "v0.0.0-20250501225837-2ac532fd4443",
-)
 use_repo(
     go_deps,
-    "com_github_cncf_xds_go",
     "com_github_envoyproxy_envoy",
     "org_golang_google_protobuf",
 )
