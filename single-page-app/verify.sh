@@ -207,7 +207,9 @@ run_log "Adjust environment for CI"
 rm -rf .local.ci
 mkdir -p .local.ci/ui
 # Copy ui directory excluding node_modules and dist to avoid disk space issues
+set -o pipefail
 (cd ui && tar cf - --exclude='node_modules' --exclude='dist' .) | (cd .local.ci/ui && tar xf -)
+set +o pipefail
 export UI_PATH=./.local.ci/ui
 for file in "${BACKUP_FILES[@]}"; do
     cp -a "${file}" "${file}.bak"
