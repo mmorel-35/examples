@@ -349,6 +349,44 @@ These fixes resolve the critical blockers that were preventing bzlmod migration:
 
 The envoy_examples repository is now ready for integration with the envoy bzlmod-migration branch, pending resolution of any remaining blockers in the envoy_toolshed repository.
 
+### Testing Notes
+
+**Important**: When testing wasm-cc as a standalone module with `bazel mod graph`, you will still see the LLVM extension error:
+
+```
+ERROR: Only the root module can use the 'llvm' extension
+```
+
+This is **expected behavior** and not a bug in envoy_examples. Here's why:
+
+1. The **envoy** module (as the root module in actual builds) correctly uses the LLVM extension
+2. When **wasm-cc** is tested standalone (making it the root module), it loads **envoy** as a dependency
+3. Since **envoy** is now a non-root module in this test scenario, the LLVM extension fails
+4. This is the correct behavior per bzlmod rules - only root modules can use the LLVM extension
+
+**Proper Testing Approach**:
+- ✅ Test when **envoy is the root module** (with wasm-cc as a local_path_override)
+- ❌ Don't test when **wasm-cc is the root module** (envoy as a git_override will fail)
+
+The envoy repository handles this correctly by:
+- Using LLVM extension in envoy's MODULE.bazel (since envoy is typically the root)
+- Loading envoy_example_wasm_cc via local_path_override from the examples repository
+- This way, envoy remains the root module and can use the LLVM extension
+
+### Verification
+
+To verify these fixes work correctly, test from the envoy repository with envoy_examples as a dependency:
+
+```bash
+# In the envoy repository with bzlmod-migration branch:
+bazel mod graph --enable_bzlmod
+
+# Or build a target that depends on wasm-cc:
+bazel build //test/wasm:...
+```
+
+This will properly test the integration with envoy as the root module.
+
 ## References
 
 - Envoy bzlmod migration branch: https://github.com/mmorel-35/envoy/tree/bzlmod-migration
