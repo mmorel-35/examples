@@ -11,6 +11,7 @@ This document tracks the progress of migrating envoy_examples to bzlmod using th
 Key improvements in this update:
 - ✅ Circular dependency resolved (envoy_examples marked as dev_dependency in envoy)
 - ✅ LLVM extension marked as dev_dependency in envoy
+- ✅ toolchains_llvm marked as dev_dependency in wasm-cc
 - ✅ All critical blockers addressed
 
 ## Configuration Applied
@@ -77,6 +78,9 @@ bazel_dep(name = "envoy_build_config")
 bazel_dep(name = "envoy_mobile")
 bazel_dep(name = "envoy_toolshed")
 bazel_dep(name = "xds", repo_name = "com_github_cncf_xds")
+
+# Dev dependencies (build-time only)
+bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
 ```
 
 ## Critical Blockers
@@ -176,6 +180,31 @@ use_repo(llvm, "llvm_toolchain", "llvm_toolchain_llvm")
 If you are using envoy as a dependency in your bzlmod project, you must configure the LLVM toolchain in your root MODULE.bazel with compatible settings:
 - LLVM version: 18.1.8 or compatible
 - C++ standard: c++20
+
+### ✅ Enhancement: toolchains_llvm as dev_dependency in wasm-cc
+
+**Status:** ✅ IMPLEMENTED - toolchains_llvm bazel_dep is now dev_dependency in wasm-cc
+
+**Description:**
+Following the same dev_dependency pattern as envoy, the `toolchains_llvm` bazel_dep in wasm-cc/MODULE.bazel has been marked as `dev_dependency = True`. This is appropriate because:
+
+1. **wasm-cc is an example module**, not a library consumed by other projects
+2. **Only needed for building wasm-cc's own targets** - consumers don't need wasm-cc's toolchain configuration
+3. **Consistent with bzlmod best practices** - build-time dependencies should be dev-only
+4. **Prevents dependency pollution** - when wasm-cc is consumed as a dependency, toolchains_llvm isn't forced on consumers
+
+**Implementation (in wasm-cc/MODULE.bazel):**
+```starlark
+bazel_dep(name = "toolchains_llvm", version = "1.4.0", dev_dependency = True)
+```
+
+**Impact:**
+- ✅ wasm-cc can build its WebAssembly targets when used as root module
+- ✅ Consumers of wasm-cc don't inherit its toolchains_llvm dependency
+- ✅ Follows the same pattern as envoy's dev_dependency usage
+- ✅ Cleaner dependency graph for downstream projects
+
+**Note:** The `bazel_dep` for toolchains_llvm is marked as dev_dependency, while the `git_override` remains (for version pinning when wasm-cc is the root module). This is different from the LLVM extension usage, which is configured at the extension level.
 
 ### 🟡 Blocker #3: Rust Cargo Lockfile Out of Date
 
