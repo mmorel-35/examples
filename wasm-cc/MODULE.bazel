@@ -4,6 +4,9 @@ module(
 )
 
 bazel_dep(name = "emsdk", version = "4.0.13")
+bazel_dep(name = "envoy")
+bazel_dep(name = "envoy_api")
+bazel_dep(name = "envoy_toolshed")
 bazel_dep(name = "grpc", version = "1.72.0", repo_name = "com_github_grpc_grpc")
 bazel_dep(name = "rules_cc", version = "0.1.1")
 bazel_dep(name = "rules_fuzzing", version = "0.6.0")
@@ -14,6 +17,27 @@ bazel_dep(name = "rules_pkg", version = "1.1.0")
 bazel_dep(name = "rules_python", version = "1.4.1")
 bazel_dep(name = "rules_rust", version = "0.56.0")
 bazel_dep(name = "toolchains_llvm", version = "1.4.0")
+
+# Git overrides for bzlmod migration
+git_override(
+    module_name = "envoy",
+    commit = "bzlmod-migration",
+    remote = "https://github.com/mmorel-35/envoy",
+)
+
+git_override(
+    module_name = "envoy_api",
+    commit = "bzlmod-migration",
+    remote = "https://github.com/mmorel-35/envoy",
+    strip_prefix = "api",
+)
+
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "bzlmod-migration",
+    remote = "https://github.com/mmorel-35/envoy",
+    strip_prefix = "bazel",
+)
 
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
 llvm.toolchain(
