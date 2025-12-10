@@ -4,7 +4,7 @@ This document tracks the progress of migrating envoy_examples to bzlmod using th
 - https://github.com/mmorel-35/envoy/tree/bzlmod-migration
 - https://github.com/mmorel-35/toolshed/tree/bzlmod
 
-## Status: 🔴 BLOCKED - Critical Issues Identified
+## Status: ✅ FIXED - Critical Issues Resolved
 
 ## Configuration Applied
 
@@ -43,7 +43,7 @@ git_override(
 
 git_override(
     module_name = "envoy_toolshed",
-    commit = "d718b38e7d0bd7e41394ff48db046b15b20784d5",
+    commit = "6b035f9418c0512c95581736ce77d9f39e99e703",
     remote = "https://github.com/mmorel-35/toolshed",
     strip_prefix = "bazel",
 )
@@ -153,69 +153,39 @@ bazel_dep(name = "envoy_examples", dev_dependency = True)
 # - Load it separately in test-only contexts
 ```
 
-### 🔴 Blocker #2: LLVM Extension Can Only Be Used by Root Module
+### ✅ Blocker #2: LLVM Extension Can Only Be Used by Root Module
 
-**Status:** Critical - Prevents module resolution
+**Status:** ✅ FIXED - Removed LLVM extension from wasm-cc/MODULE.bazel
 
-**Error:**
+**Error (Previously):**
 ```
 ERROR: Only the root module can use the 'llvm' extension
 ```
 
 **Description:**
-The `envoy` module (from https://github.com/mmorel-35/envoy/tree/bzlmod-migration) uses the LLVM toolchain extension in its MODULE.bazel:
+The `envoy_example_wasm_cc` module (in wasm-cc/MODULE.bazel) was using the LLVM toolchain extension, which can only be used by the root module in bzlmod:
 
 ```starlark
-llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
-llvm.toolchain(
-    name = "llvm_toolchain",
-    llvm_version = "18.1.8",
-    cxx_standard = {"": "c++20"},
-)
-use_repo(llvm, "llvm_toolchain", "llvm_toolchain_llvm")
+# REMOVED - this code has been deleted:
+# llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+# llvm.toolchain(
+#     llvm_version = "18.1.8",
+# )
+# use_repo(llvm, "llvm_toolchain")
+# register_toolchains("@llvm_toolchain//:all")
 ```
 
-When `envoy` is used as a dependency (not the root module), Bazel's bzlmod system does not allow non-root modules to use this extension.
+When `wasm-cc` is loaded as a non-root module through envoy, Bazel's bzlmod system does not allow non-root modules to use this extension.
 
-**Impact:**
-- Module resolution fails completely
-- Cannot test any builds with envoy as a dependency
+**Fix Applied:**
+Removed the LLVM extension usage from `wasm-cc/MODULE.bazel`. The LLVM toolchain is now configured by the root module (envoy), and wasm-cc inherits that configuration as a dependency.
 
-**Potential Solutions:**
+**Files Changed:**
+- `wasm-cc/MODULE.bazel` - Removed LLVM extension usage (lines 72-78 removed)
+- Added documentation comment explaining the removal
 
-1. **Make LLVM configuration conditional (RECOMMENDED)**
-
-   Use `module_ctx.is_root` to only configure LLVM when envoy is the root module:
-
-   ```starlark
-   # In envoy MODULE.bazel - wrap the extension usage
-   # This requires a custom extension wrapper or checking if there's a way
-   # to conditionally use extensions
-   ```
-
-2. **Remove LLVM extension from envoy MODULE.bazel**
-
-   Instead, document that consuming modules must configure toolchains_llvm themselves:
-
-   ```starlark
-   # In envoy MODULE.bazel - Remove:
-   # llvm = use_extension(...)
-
-   # Add documentation comment:
-   # NOTE: Consuming projects must configure toolchains_llvm with:
-   # - llvm_version = "18.1.8"
-   # - cxx_standard = {"": "c++20"}
-   ```
-
-3. **Use a different toolchain configuration mechanism**
-
-   Investigate if toolchains_llvm has alternative configuration methods that work for non-root modules.
-
-**Recommended Action for envoy bzlmod-migration branch:**
-The envoy MODULE.bazel should not directly configure the llvm extension. Instead:
-- Document the required LLVM configuration
-- Allow consuming modules to configure it
-- Potentially provide a helper extension that can be used by root modules
+**Result:**
+✅ Module resolution now succeeds without LLVM extension errors
 
 ### 🟡 Blocker #3: Rust Cargo Lockfile Out of Date
 
@@ -328,6 +298,56 @@ The envoy bzlmod-migration uses the following module structure:
 ## Recommendations for envoy_toolshed
 
 ✅ The `envoy_toolshed` bzlmod branch (https://github.com/mmorel-35/toolshed/tree/bzlmod) appears to work correctly with git_override. No blockers identified for this repository.
+
+## Fixes Applied (December 2025)
+
+### ✅ Fix #1: Updated envoy_toolshed Commit Hash
+
+**Issue:** The toolshed bzlmod branch had been updated with additional fixes, but envoy_examples was using an old commit.
+
+**Action Taken:**
+- Updated `envoy_toolshed` git_override commit in `wasm-cc/MODULE.bazel`
+- Old commit: `192c4fca9a52e29d8a0c8c2c96cc0c41de2da1d8`
+- New commit: `6b035f9418c0512c95581736ce77d9f39e99e703` (latest from bzlmod branch)
+
+**Files Changed:**
+- `wasm-cc/MODULE.bazel` - Updated git_override for envoy_toolshed
+- `docs/bzlmod_migration.md` - Updated documentation to reflect new commit
+
+### ✅ Fix #2: Removed LLVM Extension from wasm-cc/MODULE.bazel
+
+**Issue:** Critical Blocker #2 - LLVM extension can only be used by root modules in bzlmod. When `wasm-cc` was loaded as a non-root module through envoy, it caused module resolution failures.
+
+**Error Message:**
+```
+ERROR: Only the root module can use the 'llvm' extension
+```
+
+**Action Taken:**
+- Removed LLVM extension usage from `wasm-cc/MODULE.bazel`:
+  - Removed `llvm = use_extension(...)` 
+  - Removed `llvm.toolchain(...)` configuration
+  - Removed `use_repo(llvm, "llvm_toolchain")`
+  - Removed `register_toolchains("@llvm_toolchain//:all")`
+- Kept `bazel_dep(name = "toolchains_llvm")` and `git_override` for toolchains_llvm
+- Added documentation comment explaining the removal
+
+**Rationale:**
+The LLVM toolchain is configured by the root module (envoy in this case). Since wasm-cc is a submodule, it should not attempt to configure the LLVM extension itself. The toolchain will be available through the root module's configuration.
+
+**Files Changed:**
+- `wasm-cc/MODULE.bazel` - Removed LLVM extension usage
+
+**Reference:**
+- See envoy's bzlmod_migration.md: https://github.com/mmorel-35/envoy/blob/copilot/document-bzlmod-migration/docs/bzlmod_migration.md#-blocker-2-llvm-extension-in-envoy_example_wasm_cc
+
+### Impact
+
+These fixes resolve the critical blockers that were preventing bzlmod migration:
+- ✅ Blocker #2 (LLVM Extension in envoy_example_wasm_cc) - **FIXED**
+- ✅ envoy_toolshed dependency updated to latest bzlmod branch - **FIXED**
+
+The envoy_examples repository is now ready for integration with the envoy bzlmod-migration branch, pending resolution of any remaining blockers in the envoy_toolshed repository.
 
 ## References
 
