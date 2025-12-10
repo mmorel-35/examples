@@ -52,7 +52,7 @@ git_override(
 
 git_override(
     module_name = "envoy_toolshed",
-    commit = "192c4fca9a52e29d8a0c8c2c96cc0c41de2da1d8",
+    commit = "6b035f9418c0512c95581736ce77d9f39e99e703",
     remote = "https://github.com/mmorel-35/toolshed",
     strip_prefix = "bazel",
 )
@@ -69,10 +69,6 @@ git_override(
     remote = "https://github.com/bazel-contrib/toolchains_llvm",
 )
 
-llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
-llvm.toolchain(
-    llvm_version = "18.1.8",
-)
-use_repo(llvm, "llvm_toolchain")
-
-register_toolchains("@llvm_toolchain//:all")
+# LLVM extension removed - can only be used by root module.
+# The LLVM toolchain will be configured by the root module (envoy).
+# See: https://github.com/mmorel-35/envoy/blob/copilot/document-bzlmod-migration/docs/bzlmod_migration.md#blocker-2-llvm-extension-in-envoy_example_wasm_cc
