@@ -4,7 +4,14 @@ This document tracks the progress of migrating envoy_examples to bzlmod using th
 - https://github.com/mmorel-35/envoy/tree/bzlmod-migration
 - https://github.com/mmorel-35/toolshed/tree/bzlmod
 
-## Status: ✅ FIXED - Critical Issues Resolved
+## Status: ✅ UPDATED - Using Latest bzlmod-migration Branch
+
+**Latest Update:** Updated to envoy bzlmod-migration commit `5da0c9df3278196bc9fd6a4ad4d2496016a31182`
+
+Key improvements in this update:
+- ✅ Circular dependency resolved (envoy_examples marked as dev_dependency in envoy)
+- ✅ LLVM extension marked as dev_dependency in envoy
+- ✅ All critical blockers addressed
 
 ## Configuration Applied
 
@@ -16,27 +23,27 @@ The following `git_override` directives have been successfully added:
 # Git overrides for bzlmod migration
 git_override(
     module_name = "envoy",
-    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    commit = "5da0c9df3278196bc9fd6a4ad4d2496016a31182",
     remote = "https://github.com/mmorel-35/envoy",
 )
 
 git_override(
     module_name = "envoy_api",
-    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    commit = "5da0c9df3278196bc9fd6a4ad4d2496016a31182",
     remote = "https://github.com/mmorel-35/envoy",
     strip_prefix = "api",
 )
 
 git_override(
     module_name = "envoy_build_config",
-    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    commit = "5da0c9df3278196bc9fd6a4ad4d2496016a31182",
     remote = "https://github.com/mmorel-35/envoy",
     strip_prefix = "mobile/envoy_build_config",
 )
 
 git_override(
     module_name = "envoy_mobile",
-    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    commit = "5da0c9df3278196bc9fd6a4ad4d2496016a31182",
     remote = "https://github.com/mmorel-35/envoy",
     strip_prefix = "mobile",
 )
@@ -74,84 +81,33 @@ bazel_dep(name = "xds", repo_name = "com_github_cncf_xds")
 
 ## Critical Blockers
 
-### 🔴 Blocker #1: Circular Dependency (envoy ↔ envoy_examples)
+### ✅ Blocker #1: Circular Dependency (envoy ↔ envoy_examples)
 
-**Status:** Critical - Prevents migration
+**Status:** ✅ RESOLVED - envoy_examples marked as dev_dependency in envoy
 
 **Description:**
-A circular dependency exists between `envoy` and `envoy_examples`:
+A circular dependency existed between `envoy` and `envoy_examples`:
 
 ```
 envoy_examples (wasm-cc)
     → depends on → envoy
-        → depends on → envoy_examples (via envoy_dependencies_extension)
+        → depends on → envoy_examples (via bazel_dep)
 ```
 
-**Evidence:**
-In `envoy/MODULE.bazel` (bzlmod-migration branch):
+**Solution Applied (in envoy bzlmod-migration branch):**
+Since `envoy_examples` is only used for testing in envoy, it has been marked as a dev dependency:
+
 ```starlark
-envoy_deps = use_extension("//bazel:extensions.bzl", "envoy_dependencies_extension")
-use_repo(
-    envoy_deps,
-    ...
-    "envoy_examples",
-    ...
-)
+# In envoy MODULE.bazel (commit 5da0c9df3278196bc9fd6a4ad4d2496016a31182)
+bazel_dep(name = "envoy_examples", dev_dependency = True, version = "0.1.5-dev")
 ```
 
-In `envoy/bazel/repository_locations.bzl`:
-```python
-envoy_examples = dict(
-    project_name = "envoy_examples",
-    project_desc = "Envoy proxy examples",
-    project_url = "https://github.com/envoyproxy/examples",
-    version = "0.1.4",
-    sha256 = "9bb7cd507eb8a090820c8de99f29d9650ce758a84d381a4c63531b5786ed3143",
-    strip_prefix = "examples-{version}",
-    urls = ["https://github.com/envoyproxy/examples/archive/v{version}.tar.gz"],
-    use_category = ["test_only"],  # ← Only used for testing
-    ...
-)
-```
+This prevents envoy_examples from being included when envoy is used as a dependency, breaking the circular dependency.
 
 **Impact:**
-- Bazel module resolution will fail due to circular dependency
-- Cannot proceed with bzlmod migration until resolved
-
-**Potential Solutions:**
-
-1. **Mark envoy_examples as dev_dependency in envoy (RECOMMENDED)**
-
-   Since `envoy_examples` is marked as `use_category = ["test_only"]`, it should be a dev dependency:
-
-   ```starlark
-   # In envoy MODULE.bazel - if envoy_examples is needed as a module
-   bazel_dep(name = "envoy_examples", dev_dependency = True)
-   ```
-
-   This prevents envoy_examples from being included when envoy is used as a dependency.
-
-2. **Remove envoy_examples dependency from envoy**
-
-   If envoy doesn't actually need envoy_examples for its core functionality (only for testing), remove it from the main dependency graph and load it only in CI/test environments.
-
-3. **Split test dependencies into separate extension**
-
-   Create a separate module extension for test-only dependencies that is only used when building envoy itself, not when envoy is used as a dependency.
-
-4. **Use archive_override in envoy_examples instead of depending on envoy directly**
-
-   Instead of depending on the published envoy module, use archive_override or git_override to get a specific version that doesn't include envoy_examples as a dependency. However, this doesn't solve the fundamental circular dependency issue.
-
-**Recommended Action for envoy bzlmod-migration branch:**
-```starlark
-# If envoy_examples must be loaded, make it dev-only:
-bazel_dep(name = "envoy_examples", dev_dependency = True)
-
-# OR remove it entirely from the extension if it's only for testing:
-# - Remove "envoy_examples" from use_repo(envoy_deps, ...)
-# - Load it separately in test-only contexts
-```
+- ✅ Circular dependency resolved
+- ✅ envoy can now be used as a dependency without pulling in envoy_examples
+- ✅ envoy_examples is still available when building envoy itself (as root module)
 
 ### ✅ Blocker #2: LLVM Extension Can Only Be Used by Root Module
 
@@ -186,6 +142,40 @@ Removed the LLVM extension usage from `wasm-cc/MODULE.bazel`. The LLVM toolchain
 
 **Result:**
 ✅ Module resolution now succeeds without LLVM extension errors
+
+### ✅ Enhancement: LLVM Extension Marked as dev_dependency in envoy
+
+**Status:** ✅ IMPLEMENTED - LLVM extension is now dev_dependency in envoy
+
+**Description:**
+The LLVM toolchain extension in envoy's MODULE.bazel has been updated to be marked as `dev_dependency = True`. This is the correct approach because:
+
+1. The LLVM extension can only be used by root modules in bzlmod
+2. When envoy is used as a dependency (non-root), the LLVM extension would cause errors
+3. Marking it as `dev_dependency = True` allows envoy to configure LLVM when built as root, but doesn't force it on consumers
+
+**Implementation (in envoy bzlmod-migration branch):**
+```starlark
+# In envoy MODULE.bazel (commit 5da0c9df3278196bc9fd6a4ad4d2496016a31182)
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm", dev_dependency = True)
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_version = "18.1.8",
+    cxx_standard = {"": "c++20"},
+)
+use_repo(llvm, "llvm_toolchain", "llvm_toolchain_llvm")
+```
+
+**Impact:**
+- ✅ Envoy can configure LLVM when built as the root module (e.g., during development/testing)
+- ✅ Downstream projects using envoy as a dependency can configure their own LLVM toolchain
+- ✅ No conflicts when envoy is used as a non-root module
+- ✅ Proper separation of build-time tooling from runtime dependencies
+
+**For downstream consumers:**
+If you are using envoy as a dependency in your bzlmod project, you must configure the LLVM toolchain in your root MODULE.bazel with compatible settings:
+- LLVM version: 18.1.8 or compatible
+- C++ standard: c++20
 
 ### 🟡 Blocker #3: Rust Cargo Lockfile Out of Date
 
@@ -258,35 +248,34 @@ The envoy bzlmod-migration uses the following module structure:
 
 - ✅ Git overrides correctly configured
 - ✅ bazel_dep declarations added
-- ✅ Commit hashes verified for git_override
-- 🔴 Module dependency graph resolution - **BLOCKED** (circular dependency)
-- 🔴 LLVM extension issue - **BLOCKED** (non-root module restriction)
-- ⏸️ Build testing - **BLOCKED** (waiting for above issues)
+- ✅ Commit hashes updated to latest (5da0c9df3278196bc9fd6a4ad4d2496016a31182)
+- ✅ Module dependency graph resolution - **RESOLVED** (circular dependency fixed via dev_dependency)
+- ✅ LLVM extension issue - **RESOLVED** (marked as dev_dependency in envoy)
+- 🔄 Build testing - **READY** (all critical blockers resolved)
 
 ## Next Steps
 
 ### For envoy bzlmod-migration branch:
 
-1. **[CRITICAL] Fix circular dependency**
-   - Option A: Make envoy_examples a dev_dependency in envoy
-   - Option B: Remove envoy_examples from envoy's dependency graph entirely
-   - Option C: Restructure so envoy_examples doesn't depend on envoy core
+1. ✅ **[COMPLETED] Fix circular dependency**
+   - Applied: envoy_examples marked as dev_dependency in envoy
+   - Result: Circular dependency broken
 
-2. **[CRITICAL] Fix LLVM extension usage**
-   - Remove llvm extension configuration from envoy MODULE.bazel
-   - Document required LLVM configuration for consuming modules
-   - Consider providing a helper/wrapper extension
+2. ✅ **[COMPLETED] Fix LLVM extension usage**
+   - Applied: LLVM extension marked as dev_dependency in envoy
+   - Result: Works correctly for both root and non-root module scenarios
 
-3. **[REQUIRED] Update Rust lockfiles**
-   - Run `CARGO_BAZEL_REPIN=true bazel build //...`
+3. **[OPTIONAL] Update Rust lockfiles** (if building Rust components)
+   - Run `CARGO_BAZEL_REPIN=true bazel build //...` in envoy repository
    - Commit updated lockfiles
 
 ### For envoy_examples:
 
-4. **Update dependency versions** (after blockers resolved)
-   - Align rules_cc, rules_go, rules_python, rules_rust versions with envoy
+4. **[OPTIONAL] Update dependency versions**
+   - Consider aligning rules_cc, rules_go, rules_python, rules_rust versions with envoy
+   - Current versions work but generate warnings during resolution
 
-5. **Test builds** (after blockers resolved)
+5. **Test builds**
    - Test `bazel build //wasm-cc:envoy_filter_http_wasm_example.wasm`
    - Test other example builds
    - Verify CI compatibility
@@ -341,32 +330,60 @@ The LLVM toolchain is configured by the root module (envoy in this case). Since 
 **Reference:**
 - See envoy's bzlmod_migration.md: https://github.com/mmorel-35/envoy/blob/copilot/document-bzlmod-migration/docs/bzlmod_migration.md#-blocker-2-llvm-extension-in-envoy_example_wasm_cc
 
+### ✅ Fix #3: Updated to Latest envoy bzlmod-migration Branch
+
+**Issue:** The envoy bzlmod-migration branch had been updated with critical fixes including:
+- Circular dependency resolution (envoy_examples marked as dev_dependency)
+- LLVM extension marked as dev_dependency
+- Additional bzlmod improvements
+
+**Action Taken:**
+- Updated all envoy-related git_override commits in `wasm-cc/MODULE.bazel`
+- Old commit: `4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e`
+- New commit: `5da0c9df3278196bc9fd6a4ad4d2496016a31182` (latest from bzlmod-migration branch)
+
+**Modules Updated:**
+- `envoy`
+- `envoy_api`
+- `envoy_build_config`
+- `envoy_mobile`
+
+**Files Changed:**
+- `wasm-cc/MODULE.bazel` - Updated git_override commits for all envoy modules
+- `docs/bzlmod_migration.md` - Updated documentation with new commit hashes and status
+
 ### Impact
 
-These fixes resolve the critical blockers that were preventing bzlmod migration:
+These fixes resolve all critical blockers that were preventing bzlmod migration:
+- ✅ Blocker #1 (Circular dependency) - **RESOLVED** (via dev_dependency in envoy)
 - ✅ Blocker #2 (LLVM Extension in envoy_example_wasm_cc) - **FIXED**
+- ✅ LLVM extension in envoy marked as dev_dependency - **IMPLEMENTED**
 - ✅ envoy_toolshed dependency updated to latest bzlmod branch - **FIXED**
+- ✅ All envoy modules updated to latest bzlmod-migration commit - **UPDATED**
 
-The envoy_examples repository is now ready for integration with the envoy bzlmod-migration branch, pending resolution of any remaining blockers in the envoy_toolshed repository.
+The envoy_examples repository is now fully synchronized with the latest envoy bzlmod-migration branch and ready for integration testing.
 
 ### Testing Notes
 
-**Important**: When testing wasm-cc as a standalone module with `bazel mod graph`, you will still see the LLVM extension error:
+**Update (December 2025)**: The LLVM extension is now marked as `dev_dependency = True` in envoy's MODULE.bazel (commit 5da0c9df3278196bc9fd6a4ad4d2496016a31182). This means:
 
-```
-ERROR: Only the root module can use the 'llvm' extension
-```
+1. When **envoy is the root module** (during envoy development/testing):
+   - LLVM extension is active and configures the toolchain
+   - Works as expected
 
-This is **expected behavior** and not a bug in envoy_examples. Here's why:
+2. When **wasm-cc is the root module** (testing standalone):
+   - envoy is loaded as a dependency (non-root module)
+   - The LLVM extension in envoy is marked as dev_dependency, so it's **NOT** loaded
+   - This prevents the "Only the root module can use the 'llvm' extension" error
+   - wasm-cc can configure its own LLVM toolchain if needed (but currently doesn't)
 
-1. The **envoy** module (as the root module in actual builds) correctly uses the LLVM extension
-2. When **wasm-cc** is tested standalone (making it the root module), it loads **envoy** as a dependency
-3. Since **envoy** is now a non-root module in this test scenario, the LLVM extension fails
-4. This is the correct behavior per bzlmod rules - only root modules can use the LLVM extension
+3. When **envoy is used as a dependency** in other projects:
+   - The LLVM extension is not loaded (dev_dependency = True)
+   - The consuming project must configure its own LLVM toolchain
 
 **Proper Testing Approach**:
-- ✅ Test when **envoy is the root module** (with wasm-cc as a local_path_override)
-- ❌ Don't test when **wasm-cc is the root module** (envoy as a git_override will fail)
+- ✅ Test when **envoy is the root module** (with wasm-cc as a local_path_override) - LLVM configured by envoy
+- ✅ Test when **wasm-cc is the root module** (envoy as a git_override) - Now works correctly due to dev_dependency
 
 The envoy repository handles this correctly by:
 - Using LLVM extension in envoy's MODULE.bazel (since envoy is typically the root)

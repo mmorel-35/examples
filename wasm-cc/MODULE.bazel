@@ -25,27 +25,27 @@ bazel_dep(name = "xds", repo_name = "com_github_cncf_xds")
 # Git overrides for bzlmod migration
 git_override(
     module_name = "envoy",
-    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    commit = "5da0c9df3278196bc9fd6a4ad4d2496016a31182",
     remote = "https://github.com/mmorel-35/envoy",
 )
 
 git_override(
     module_name = "envoy_api",
-    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    commit = "5da0c9df3278196bc9fd6a4ad4d2496016a31182",
     remote = "https://github.com/mmorel-35/envoy",
     strip_prefix = "api",
 )
 
 git_override(
     module_name = "envoy_build_config",
-    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    commit = "5da0c9df3278196bc9fd6a4ad4d2496016a31182",
     remote = "https://github.com/mmorel-35/envoy",
     strip_prefix = "mobile/envoy_build_config",
 )
 
 git_override(
     module_name = "envoy_mobile",
-    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    commit = "5da0c9df3278196bc9fd6a4ad4d2496016a31182",
     remote = "https://github.com/mmorel-35/envoy",
     strip_prefix = "mobile",
 )
