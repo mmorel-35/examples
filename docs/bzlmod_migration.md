@@ -284,9 +284,42 @@ The envoy bzlmod-migration uses the following module structure:
    - Document bzlmod usage for contributors
    - Update build instructions
 
-## Recommendations for envoy_toolshed
+## envoy_toolshed bzlmod Migration Status
 
-✅ The `envoy_toolshed` bzlmod branch (https://github.com/mmorel-35/toolshed/tree/bzlmod) appears to work correctly with git_override. No blockers identified for this repository.
+✅ **COMPLETED** - The `envoy_toolshed` bzlmod migration is complete and working correctly.
+
+**Current Status:**
+- ✅ MODULE.bazel fully implemented with all dependencies
+- ✅ LLVM extension properly removed (not needed for toolshed functionality)
+- ✅ Python toolchains configured for versions 3.9-3.13
+- ✅ JQ toolchain properly configured
+- ✅ Compatible with both bzlmod and WORKSPACE modes
+- ✅ Comprehensive migration documentation available
+
+**Documentation:**
+The toolshed repository includes detailed bzlmod migration documentation at:
+- https://github.com/mmorel-35/toolshed/blob/bzlmod/docs/bzlmod_migration.md
+
+This documentation covers:
+- Migration overview and key changes
+- Usage instructions for consumers (git_override/archive_override with `strip_prefix = "bazel"`)
+- Module dependencies and versions
+- Python support (3.9-3.13)
+- Compatibility notes (what works in bzlmod vs WORKSPACE mode)
+- Known limitations and future work
+
+**Integration with envoy_examples:**
+The git_override in `wasm-cc/MODULE.bazel` is correctly configured:
+```starlark
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "6b035f9418c0512c95581736ce77d9f39e99e703",
+    remote = "https://github.com/mmorel-35/toolshed",
+    strip_prefix = "bazel",
+)
+```
+
+✅ No further action needed for toolshed bzlmod migration.
 
 ## Fixes Applied (December 2025)
 

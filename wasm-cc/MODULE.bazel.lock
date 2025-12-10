@@ -962,7 +962,7 @@
     "@@envoy_api~//bazel:extensions.bzl%non_module_deps": {
       "general": {
         "bzlTransitiveDigest": "f62ZN9WeC59o2vEXmoOXAlYfhEdsuUf4G/w6xLUgkD8=",
-        "usagesDigest": "lHPK7e1YfUJE1iELHYhCBfcHh7a7ey73SNOrlOBclS4=",
+        "usagesDigest": "tHL9grUBQEIkha6zvMFp6ASXhPCSfhsmCe23m/KQmTM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -1019,7 +1019,7 @@
     "@@envoy_mobile~//bazel:extensions.bzl%envoy_mobile_dependencies": {
       "general": {
         "bzlTransitiveDigest": "0hXxosuvxPQvCLhJaIeDRk7KDSad1X0Z0t68IuWgNLQ=",
-        "usagesDigest": "X4F+SImFtLTMeKYXirSpY4D5SF+hv5ByZ+xzQcTkluo=",
+        "usagesDigest": "LZqQQJI0HJQC95/8bvdvMAr8MrYmssbgNTCZisX+OIs=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -1102,8 +1102,8 @@
     },
     "@@envoy~//bazel:extensions.bzl%envoy_dependencies_extension": {
       "general": {
-        "bzlTransitiveDigest": "l1vspwFRgNIXApf8PzJW+qnEE9jTPxlgg8LXVgPkeCc=",
-        "usagesDigest": "DRecPeH7JHriJGzhJ2/42/y4ufNrZ2gzhLO5Sl8zyu8=",
+        "bzlTransitiveDigest": "UrtBQr7dS74M0g26I6kYUYOkIPlIHBNVLUf9gODRvbA=",
+        "usagesDigest": "AeU47RnBVLKc4waX0oGefGgg7XcqXfvSSQup9WXHnx4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -1947,28 +1947,6 @@
               "strip_prefix": "bazel-compilation-database-40864791135333e1446a04553b63cbe744d358d0"
             }
           },
-          "envoy_examples": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-            "ruleClassName": "http_archive",
-            "attributes": {
-              "urls": [
-                "https://github.com/envoyproxy/examples/archive/v0.1.4.tar.gz"
-              ],
-              "sha256": "9bb7cd507eb8a090820c8de99f29d9650ce758a84d381a4c63531b5786ed3143",
-              "strip_prefix": "examples-0.1.4"
-            }
-          },
-          "envoy_toolshed": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-            "ruleClassName": "http_archive",
-            "attributes": {
-              "urls": [
-                "https://github.com/envoyproxy/toolshed/archive/bazel-v0.3.8.tar.gz"
-              ],
-              "sha256": "588bb7e206897fffc3ad8f4d5835ee2bbdd9f79e543a33853936fa014bda04ee",
-              "strip_prefix": "toolshed-bazel-v0.3.8/bazel"
-            }
-          },
           "com_github_maxmind_libmaxminddb": {
             "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
             "ruleClassName": "http_archive",
@@ -2256,8 +2234,8 @@
     },
     "@@envoy~//bazel:extensions.bzl%envoy_repo_extension": {
       "general": {
-        "bzlTransitiveDigest": "l1vspwFRgNIXApf8PzJW+qnEE9jTPxlgg8LXVgPkeCc=",
-        "usagesDigest": "Zmw7vEWJUDt58WDPwzADVpfx19ChCMGwCblu44ToXPA=",
+        "bzlTransitiveDigest": "UrtBQr7dS74M0g26I6kYUYOkIPlIHBNVLUf9gODRvbA=",
+        "usagesDigest": "6tYzp6YHDyLpxgCsspDR+i+EXyFXB2tF803cmqsP6RE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -2295,7 +2273,7 @@
     "@@googleapis~//:extensions.bzl%switched_rules": {
       "general": {
         "bzlTransitiveDigest": "liqpEiZfQn8ycdEspyJt6J+baY9GQOl+9/prJJz2wTA=",
-        "usagesDigest": "cM/ubJ8WKMZeKkQoPjFzdq7Eyt64u+jqbTowqqtTKQA=",
+        "usagesDigest": "vw4NIhqZgjXXXLCW/TaFhQLes7dbTEzOCy6jCbmIU+k=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -2477,7 +2455,7 @@
     "@@rules_buf~//buf:extensions.bzl%buf": {
       "general": {
         "bzlTransitiveDigest": "NISWQUlkE6cvlYhTu8NQ5Q69bl+AwOZZF1fcjHd6Cuc=",
-        "usagesDigest": "OdEUBlANUnH9r8EQ9jsLIrDj0KVEL1Je4eH5E7JGgyA=",
+        "usagesDigest": "dpzkgF2EJ5ZTDy95YuneZrjlZDEtP3N78LdYnZaU5Vo=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -3105,85 +3083,6 @@
             "rules_swift~",
             "bazel_tools",
             "bazel_tools"
-          ]
-        ]
-      }
-    },
-    "@@toolchains_llvm~//toolchain/extensions:llvm.bzl%llvm": {
-      "general": {
-        "bzlTransitiveDigest": "afRF0aFOIUrkYl3o040WQ606ep1qciEXzjnAxT3Kek8=",
-        "usagesDigest": "4ObcXI0JeCI6rwcUyZoK/dNprX4dyPNxNGNrnlzqUZg=",
-        "recordedFileInputs": {},
-        "recordedDirentsInputs": {},
-        "envVariables": {},
-        "generatedRepoSpecs": {
-          "llvm_toolchain_llvm": {
-            "bzlFile": "@@toolchains_llvm~//toolchain:rules.bzl",
-            "ruleClassName": "llvm",
-            "attributes": {
-              "alternative_llvm_sources": [],
-              "auth_patterns": {},
-              "distribution": "auto",
-              "exec_arch": "",
-              "exec_os": "",
-              "libclang_rt": {},
-              "llvm_mirror": "",
-              "llvm_version": "18.1.8",
-              "llvm_versions": {},
-              "netrc": "",
-              "sha256": {},
-              "strip_prefix": {},
-              "urls": {}
-            }
-          },
-          "llvm_toolchain": {
-            "bzlFile": "@@toolchains_llvm~//toolchain:rules.bzl",
-            "ruleClassName": "toolchain",
-            "attributes": {
-              "absolute_paths": false,
-              "archive_flags": {},
-              "compile_flags": {},
-              "conly_flags": {},
-              "coverage_compile_flags": {},
-              "coverage_link_flags": {},
-              "cxx_builtin_include_directories": {},
-              "cxx_flags": {},
-              "cxx_standard": {},
-              "dbg_compile_flags": {},
-              "exec_arch": "",
-              "exec_os": "",
-              "extra_exec_compatible_with": {},
-              "extra_target_compatible_with": {},
-              "link_flags": {},
-              "link_libs": {},
-              "llvm_versions": {
-                "": "18.1.8"
-              },
-              "opt_compile_flags": {},
-              "opt_link_flags": {},
-              "stdlib": {},
-              "target_settings": {},
-              "unfiltered_compile_flags": {},
-              "toolchain_roots": {},
-              "sysroot": {}
-            }
-          }
-        },
-        "recordedRepoMappingEntries": [
-          [
-            "toolchains_llvm~",
-            "bazel_skylib",
-            "bazel_skylib~"
-          ],
-          [
-            "toolchains_llvm~",
-            "bazel_tools",
-            "bazel_tools"
-          ],
-          [
-            "toolchains_llvm~",
-            "toolchains_llvm",
-            "toolchains_llvm~"
           ]
         ]
       }
