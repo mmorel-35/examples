@@ -6,6 +6,8 @@ module(
 bazel_dep(name = "emsdk", version = "4.0.13")
 bazel_dep(name = "envoy")
 bazel_dep(name = "envoy_api")
+bazel_dep(name = "envoy_build_config")
+bazel_dep(name = "envoy_mobile")
 bazel_dep(name = "envoy_toolshed")
 bazel_dep(name = "grpc", version = "1.72.0", repo_name = "com_github_grpc_grpc")
 bazel_dep(name = "rules_cc", version = "0.1.1")
@@ -17,26 +19,53 @@ bazel_dep(name = "rules_pkg", version = "1.1.0")
 bazel_dep(name = "rules_python", version = "1.4.1")
 bazel_dep(name = "rules_rust", version = "0.56.0")
 bazel_dep(name = "toolchains_llvm", version = "1.4.0")
+bazel_dep(name = "xds", repo_name = "com_github_cncf_xds")
 
 # Git overrides for bzlmod migration
 git_override(
     module_name = "envoy",
-    commit = "bzlmod-migration",
+    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
     remote = "https://github.com/mmorel-35/envoy",
 )
 
 git_override(
     module_name = "envoy_api",
-    commit = "bzlmod-migration",
+    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
     remote = "https://github.com/mmorel-35/envoy",
     strip_prefix = "api",
 )
 
 git_override(
-    module_name = "envoy_toolshed",
-    commit = "bzlmod-migration",
+    module_name = "envoy_build_config",
+    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
     remote = "https://github.com/mmorel-35/envoy",
+    strip_prefix = "mobile/envoy_build_config",
+)
+
+git_override(
+    module_name = "envoy_mobile",
+    commit = "4fc5c5cd8a2aec2a51fd21462bbd648d92d0889e",
+    remote = "https://github.com/mmorel-35/envoy",
+    strip_prefix = "mobile",
+)
+
+git_override(
+    module_name = "envoy_toolshed",
+    commit = "d718b38e7d0bd7e41394ff48db046b15b20784d5",
+    remote = "https://github.com/mmorel-35/toolshed",
     strip_prefix = "bazel",
+)
+
+git_override(
+    module_name = "xds",
+    commit = "8bfbf64dc13ee1a570be4fbdcfccbdd8532463f0",
+    remote = "https://github.com/cncf/xds",
+)
+
+git_override(
+    module_name = "toolchains_llvm",
+    commit = "fb29f3d53757790dad17b90df0794cea41f1e183",
+    remote = "https://github.com/bazel-contrib/toolchains_llvm",
 )
 
 llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
